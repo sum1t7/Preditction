@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 import pickle
 import heapq
 
-# Load and preprocess text
 path = '/kaggle/input/textdata/1661-0.txt'
 text = open(path, encoding='utf-8').read().lower()
 print('corpus length:', len(text))
@@ -35,7 +34,6 @@ for i, each_words in enumerate(prev_words):
         X[i, j, unique_word_index[word]] = 1
     Y[i, unique_word_index[next_words[i]]] = 1
 
-# Define model
 model = Sequential()
 model.add(LSTM(128, input_shape=(WORD_LENGTH, len(unique_words))))
 model.add(Dense(len(unique_words)))
@@ -46,11 +44,9 @@ model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['ac
 
 history = model.fit(X, Y, validation_split=0.05, batch_size=128, epochs=2, shuffle=True).history
 
-# Save model and history
 model.save('keras_next_word_model.h5')
 pickle.dump(history, open("history.p", "wb"))
 
-# Plotting
 plt.plot(history['accuracy'])
 plt.plot(history['val_accuracy'])
 plt.title('Model Accuracy')
@@ -67,7 +63,6 @@ plt.xlabel('Epoch')
 plt.legend(['Train', 'Validation'], loc='upper left')
 plt.show()
 
-# Prediction helpers
 def prepare_input(text):
     x = np.zeros((1, WORD_LENGTH, len(unique_words)))
     words = text.split()
@@ -78,7 +73,7 @@ def prepare_input(text):
 
 def sample(preds, top_n=3):
     preds = np.asarray(preds).astype('float64')
-    preds = np.log(preds + 1e-10)  # Prevent log(0)
+    preds = np.log(preds + 1e-10)  
     exp_preds = np.exp(preds)
     preds = exp_preds / np.sum(exp_preds)
     return heapq.nlargest(top_n, range(len(preds)), preds.take)
@@ -94,7 +89,6 @@ def predict_completions(text, n=3):
     next_indices = sample(preds, n)
     return [index_to_word[idx] for idx in next_indices]
 
-# Try it
 quotes = [
     "It is not a lack of love, but a lack of friendship that makes unhappy marriages.",
     "That which does not kill us makes us stronger.",
